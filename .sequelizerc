@@ -1,0 +1,10 @@
+const path = require('path');
+
+module.exports = {
+  'config': path.resolve('./src/config/config.json'), // Đường dẫn đến file config
+  'models-path': path.resolve('./src/models'), // Đường dẫn đến thư mục models
+  'seeders-path': path.resolve('./src/seeders'), // Đường dẫn đến thư mục seeders
+  'migrations-path': path.resolve('./src/migrations'), // Đường dẫn đến thư mục migrations
+};
+
+// Cấu hình đường dẫn tới một số file mà sequelize cli dùng trong src mà không cần cd vào src để thao tác 
