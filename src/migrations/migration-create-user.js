@@ -20,25 +20,21 @@ module.exports = {
       },
       lastName: {
         type: Sequelize.STRING
-      },
-      address: {
-        type: Sequelize.STRING
       }, 
       gender: {
         type: Sequelize.BOOLEAN
       }, 
-      roleId: {
-        type: Sequelize.STRING
-      }, 
       phoneNumber: {
         type: Sequelize.STRING
       }, 
-      positionId: {
-        type: Sequelize.STRING
-      }, 
-      image: {
+      profile_Image: {
         type: Sequelize.STRING
       },
+      userType: {
+        type: DataTypes.ENUM('customer', 'admin'),
+        allowNull: false,
+        defaultValue: 'customer',
+      }, 
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

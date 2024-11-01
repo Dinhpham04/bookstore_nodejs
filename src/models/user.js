@@ -18,18 +18,13 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
-    address: DataTypes.STRING,
-    phoneNumber: DataTypes.STRING, 
+    phoneNumber: DataTypes.STRING,
     gender: DataTypes.BOOLEAN,
-    image: DataTypes.STRING,
-    roleId: DataTypes.STRING,
-    positionId: DataTypes.STRING, 
+    profile_Image: DataTypes.STRING,
+    userType: DataTypes.ENUM('customer', 'admin')
   }, {
     sequelize,
     modelName: 'User',
   });
   return User;
 };
-
-// dùng để định nghĩa thuộc tính của bảng 
-// Khởi tạo model đầu tiên: npx sequelize-cli model:generate --name User --attributes firstName:string,lastName:string,email:string

@@ -2,23 +2,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Allcodes', {
+    await queryInterface.createTable('Genres', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      address: {
+      name: {
         type: Sequelize.STRING
       },
-      type: {
+      imageUrl: {
         type: Sequelize.STRING
       },
-      valueEn: {
-        type: Sequelize.STRING
-      },
-      
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -30,9 +26,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Allcods');
+    await queryInterface.dropTable('Genres');
   }
 };
-
-// file này dùng để cấu trúc cơ sở dữ liệu (các bảng trong database )
-// để run các file migration để tạo ra các bảng trong cơ sở dữ liệu gõ lệnh: npx sequelize-cli db:migrate

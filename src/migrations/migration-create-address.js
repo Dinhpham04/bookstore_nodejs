@@ -2,24 +2,27 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Clinics', {
+    await queryInterface.createTable('Addresses', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      address: {
-        type: Sequelize.TEXT
-      },
-      name: {
+      city: {
         type: Sequelize.STRING
       },
-      decription: {
+      district: {
         type: Sequelize.TEXT
       },
-      image: {
+      ward: {
         type: Sequelize.STRING
+      },
+      addressDetail: {
+        type: Sequelize.STRING
+      },
+      isDefault: {
+        type: Sequelize.BOOLEAN
       },
       
       createdAt: {
@@ -33,6 +36,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Clinics');
+    await queryInterface.dropTable('Addresses');
   }
 };

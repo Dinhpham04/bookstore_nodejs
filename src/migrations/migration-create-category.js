@@ -2,26 +2,19 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Histories', {
+    await queryInterface.createTable('Categories', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      patientId: {
-        type: Sequelize.INTEGER
+      name: {
+        type: Sequelize.STRING
       },
-      doctorId: {
-        type: Sequelize.INTEGER
+      imageUrl: {
+        type: Sequelize.STRING
       },
-      description: {
-        type: Sequelize.TEXT
-      },
-      files: {
-        type: Sequelize.TEXT
-      },
-      
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -33,6 +26,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Histories');
+    await queryInterface.dropTable('Categories');
   }
 };
