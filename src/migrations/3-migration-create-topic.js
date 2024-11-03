@@ -2,39 +2,32 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Users', {
+    await queryInterface.createTable('Topics', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      email: {
-        type: Sequelize.STRING
-      },
-      password: {
-        type: Sequelize.STRING
-      },
-      firstName: {
-        type: Sequelize.STRING
-      },
-      lastName: {
-        type: Sequelize.STRING
-      }, 
-      gender: {
-        type: Sequelize.BOOLEAN
-      }, 
-      phoneNumber: {
-        type: Sequelize.STRING
-      }, 
-      profile_Image: {
-        type: Sequelize.STRING
-      },
-      userType: {
-        type: DataTypes.ENUM('customer', 'admin'),
+      categoryId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'categories',
+            // không dùng schema
+          },
+          key: 'id',
+        },
         allowNull: false,
-        defaultValue: 'customer',
-      }, 
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      name: {
+        type: Sequelize.STRING
+      },
+      imageUrl: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -46,6 +39,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Users');
+    await queryInterface.dropTable('Topics');
   }
 };

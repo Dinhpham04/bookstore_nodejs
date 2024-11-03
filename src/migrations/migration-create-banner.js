@@ -2,17 +2,17 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Topics', {  // không đặt tên số nhiều cho bảng quan hệ
+    await queryInterface.createTable('Banners', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
-        type: Sequelize.STRING
-      },
       imageUrl: {
+        type: Sequelize.STRING,
+      },
+      link: {
         type: Sequelize.STRING
       },
       createdAt: {
@@ -26,6 +26,7 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Topics');
+    await queryInterface.dropTable('Banners');
   }
 };
+

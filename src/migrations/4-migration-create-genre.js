@@ -2,18 +2,18 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Addresses', {
+    await queryInterface.createTable('Genres', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      userId: {
+      topicId: {
         type: Sequelize.INTEGER,
         references: {
           model: {
-            tableName: 'users',
+            tableName: 'topics',
             // không dùng schema
           },
           key: 'id',
@@ -22,22 +22,12 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      city: {
+      name: {
         type: Sequelize.STRING
       },
-      district: {
-        type: Sequelize.TEXT
-      },
-      ward: {
+      imageUrl: {
         type: Sequelize.STRING
       },
-      addressDetail: {
-        type: Sequelize.STRING
-      },
-      isDefault: {
-        type: Sequelize.BOOLEAN
-      },
-
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,6 +39,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Addresses');
+    await queryInterface.dropTable('Genres');
   }
 };

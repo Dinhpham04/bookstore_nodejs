@@ -2,33 +2,49 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Images', {
+    await queryInterface.createTable('Orders', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      productId: {
+      userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Products',
+          model: 'Users',
           key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      url: {
+      status: {
+        type: Sequelize.ENUM('pending_payment', 'processing', 'shipping', 'completed', 'returned'),
+        allowNull: false,
+        defaultValue: 'processing'
+      },
+      orderDate: {
+        type: Sequelize.DATE,
+      },
+      supplier: {
         type: Sequelize.STRING
       },
-      isPrimary: {
-        type: Sequelize.BOOLEAN
+      paymentMethod: {
+        type: Sequelize.ENUM('cash_on_delivery', 'credit_card', 'debit_card', 'bank_transfer')
       },
-      orderNumber: {
+      paymentStatus: {
+        type: Sequelize.ENUM('unpaid', 'paid')
+      },
+      totalAmount: {
         type: Sequelize.INTEGER
       },
-
+      shippingFee: {
+        type: Sequelize.STRING
+      },
+      note: {
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -40,6 +56,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Images');
+    await queryInterface.dropTable('Orders');
   }
 };

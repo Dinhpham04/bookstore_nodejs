@@ -4,13 +4,27 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Product extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) { // định danh các mối quan hệ 
-      // define association here
+    static associate(models) { 
+      Product.belongsTo(models.Genre, {
+        foreignKey: 'genreId',
+        as: 'genre'
+      });
+      Product.hasMany(models.Image, {
+        foreignKey: 'productId',
+        as: 'images'
+      }); 
+      Product.hasMany(models.OderItem, {
+        foreignKey: 'productId',
+        as: 'oderItems'
+      }); 
+      Product.hasMany(models.CartItem, {
+        foreignKey: 'productId',
+        as: 'cartItems'
+      }); 
+      Product.hasMany(models.VoucherProduct, {
+        foreignKey: 'productId',
+        as: 'voucherProducts'
+      });
     }
   }
   Product.init({ // không cần khai báo khóa chính 

@@ -4,13 +4,16 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Topic extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
-    static associate(models) { // định danh các mối quan hệ 
-      // define association here
+    
+    static associate(models) { 
+      Topic.belongsTo(models.Category, {
+        foreignKey: 'categoryId', 
+        as: 'category'
+      }); 
+      Topic.hasMany(models.Genre, {
+        foreignKey: 'topicId', 
+        as: 'genres'
+      }); 
     }
   }
   Topic.init({ // không cần khai báo khóa chính 

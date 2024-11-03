@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Addresses', {
+    await queryInterface.createTable('Notifications', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,33 +11,28 @@ module.exports = {
       },
       userId: {
         type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: 'users',
-            // không dùng schema
-          },
-          key: 'id',
-        },
         allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id'
+        },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      city: {
+      type: {
         type: Sequelize.STRING
       },
-      district: {
-        type: Sequelize.TEXT
-      },
-      ward: {
+      title: {
         type: Sequelize.STRING
       },
-      addressDetail: {
-        type: Sequelize.STRING
+      message: {
+        type: Sequelize.STRING,
       },
-      isDefault: {
-        type: Sequelize.BOOLEAN
+      isReaded: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
       },
-
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,6 +44,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Addresses');
+    await queryInterface.dropTable('Notifications');
   }
 };

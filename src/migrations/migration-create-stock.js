@@ -2,42 +2,35 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Addresses', {
+    await queryInterface.createTable('Stocks', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      userId: {
+      productId: {
         type: Sequelize.INTEGER,
-        references: {
-          model: {
-            tableName: 'users',
-            // không dùng schema
-          },
-          key: 'id',
-        },
         allowNull: false,
+        references: {
+          model: 'Products',
+          key: 'id'
+        },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      city: {
+      quantity: {
+        type: Sequelize.INTEGER
+      },
+      price: {
+        type: Sequelize.INTEGER
+      },
+      transactionDate: {
+        type: Sequelize.DATE,
+      },
+      note: {
         type: Sequelize.STRING
       },
-      district: {
-        type: Sequelize.TEXT
-      },
-      ward: {
-        type: Sequelize.STRING
-      },
-      addressDetail: {
-        type: Sequelize.STRING
-      },
-      isDefault: {
-        type: Sequelize.BOOLEAN
-      },
-
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,6 +42,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Addresses');
+    await queryInterface.dropTable('Stocks');
   }
 };
