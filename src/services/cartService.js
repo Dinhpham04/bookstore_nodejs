@@ -38,10 +38,28 @@ let addToCart = async (userId, productId, quantity) => {
             }
         })
 
+        // Kiểm tra xem còn đủ số lượng không 
         if (existingCartItem) {
+            const totalQuantity = existingCartItem.quantity + parseInt(quantity);
+            if (totalQuantity > product.quantityAvailable) {
+                return {
+                    statusCode: 400,
+                    statusMes: 'STOCK_INSUFFICIENT',
+                    message: `Số lượng yêu cầu cho ${totalQuantity} không có sẵn`,
+                    quantityAvailable: product.quantityAvailable
+                }
+            }
             existingCartItem.quantity += parseInt(quantity);
             await existingCartItem.save();
         } else {
+            if (parseInt(quantity) > product.quantityAvailable) {
+                return {
+                    statusCode: 400,
+                    statusMes: 'STOCK_INSUFFICIENT',
+                    message: `Số lượng yêu cầu cho ${quantity} không có sẵn`,
+                    quantityAvailable: product.quantityAvailable
+                }
+            }
             await db.CartItem.create({
                 cartId: cart.id,
                 productId,
@@ -51,6 +69,7 @@ let addToCart = async (userId, productId, quantity) => {
         }
         return {
             statusCode: 200,
+            statusMes: 'CART_PRODUCT_ADDED',
             message: 'Product added to cart successfully',
         }
     } catch (error) {
@@ -76,17 +95,25 @@ let getCart = async (userId) => {
                 {
                     model: db.CartItem,
                     as: 'cartItems',
-                    attributes: ['quantity'],
+                    attributes: ['id', 'quantity', 'isChecked', 'isCheckedOut'],
                     include: [
                         {
                             model: db.Product,
                             as: 'product',
-                            attributes: ['id', 'name', 'price', 'originalPrice']
+                            attributes: ['id', 'name', 'price', 'originalPrice',
+                                [
+                                    db.sequelize.literal(
+                                        `(SELECT url FROM Images WHERE Images.productId = cartItems.productId AND Images.isPrimary = true )`
+                                    ),
+                                    'image'
+                                ]
+                            ]
                         }
                     ]
                 }
             ]
         });
+
         if (!cart) {
             return {
                 statusCode: 404,
@@ -97,12 +124,16 @@ let getCart = async (userId) => {
         const cartDetails = cart.cartItems.map(item => {
             const totalPrice = item.quantity * item.product.price;
             return {
-                id: item.product.id,
+                cartItemId: item.id,
+                productId: item.product.id,
                 name: item.product.name,
                 price: item.product.price,
                 originalPrice: item.product.originalPrice,
+                image: item.product.dataValues.image,
                 quantity: item.quantity,
-                totalPrice
+                totalPrice,
+                isChecked: item.isChecked,
+                isCheckedOut: item.isCheckedOut,
             }
         })
         const totalAmount = cartDetails.reduce((acc, item) => acc + item.totalPrice, 0);

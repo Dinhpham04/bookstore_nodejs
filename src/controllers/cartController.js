@@ -6,9 +6,8 @@ let handleAddToCart = async (req, res) => {
     try {
         const { userId, productId, quantity } = req.body;
         const respon = await cartService.addToCart(userId, productId, quantity);
-        res.status(respon.statusCode).json({
-            message: respon.message
-        });
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json(data);
     } catch (error) {
         res.status(500).json(error.message);
     }
