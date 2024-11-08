@@ -24,6 +24,10 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Address, {
         foreignKey: 'userId',
         as: 'addresses'
+      });
+      User.hasMany(models.Review, {
+        foreignKey: 'userId',
+        as: 'reviews'
       })
     }
   }
@@ -34,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     phoneNumber: DataTypes.STRING,
     gender: DataTypes.BOOLEAN,
-    profile_Image: DataTypes.STRING,
+    profileImage: DataTypes.STRING,
     userType: DataTypes.ENUM('customer', 'admin')
   }, {
     sequelize,

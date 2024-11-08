@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Addresses', {
+    await queryInterface.createTable('Reviews', {  // không đặt tên số nhiều cho bảng quan hệ
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         references: {
           model: {
-            tableName: 'users',
+            tableName: 'Users',
           },
           key: 'id',
         },
@@ -21,23 +21,25 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      city: {
-        type: Sequelize.STRING
+      productId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: {
+            tableName: 'products',
+          },
+          key: 'id',
+        },
+        allowNull: false,
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
-      district: {
-        type: Sequelize.TEXT
+      rating: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
       },
-      ward: {
-        type: Sequelize.STRING
+      comment: {
+        type: Sequelize.TEXT,
       },
-      addressDetail: {
-        type: Sequelize.STRING
-      },
-      isDefault: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false
-      },
-
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -49,6 +51,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Addresses');
+    await queryInterface.dropTable('Reviews');
   }
 };

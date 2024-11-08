@@ -23,7 +23,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       isPrimary: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: false 
       },
       orderNumber: {
         type: Sequelize.INTEGER

@@ -6,8 +6,8 @@ module.exports = (sequelize, DataTypes) => {
   class Notification extends Model {
     static associate(models) { 
       Notification.belongsTo(models.User, {
-        foreignKey: 'customerId', 
-        as: 'customer' 
+        foreignKey: 'userId', 
+        as: 'user' 
       })
     }
   }

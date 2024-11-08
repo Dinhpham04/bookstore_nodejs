@@ -25,16 +25,18 @@ module.exports = {
         defaultValue: 'processing'
       },
       orderDate: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATE, // thời gian mặc định là ngay lúc tạo
       },
       supplier: {
         type: Sequelize.STRING
       },
       paymentMethod: {
-        type: Sequelize.ENUM('cash_on_delivery', 'credit_card', 'debit_card', 'bank_transfer')
+        type: Sequelize.ENUM('cash_on_delivery', 'credit_card', 'debit_card', 'bank_transfer'),
+        defaultValue: 'cash_on_delivery',
       },
       paymentStatus: {
-        type: Sequelize.ENUM('unpaid', 'paid')
+        type: Sequelize.ENUM('unpaid', 'paid'),
+        defaultValue: 'unpaid'
       },
       totalAmount: {
         type: Sequelize.INTEGER

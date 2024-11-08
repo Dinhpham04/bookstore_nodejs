@@ -6,8 +6,8 @@ module.exports = (sequelize, DataTypes) => {
   class VoucherUser extends Model {
     static associate(models) { 
       VoucherUser.belongsTo(models.User, {
-        foreignKey: 'customerId',
-        as: 'customer'
+        foreignKey: 'userId',
+        as: 'user'
       });
       VoucherUser.belongsTo(models.Voucher, {
         foreignKey: 'voucherId',

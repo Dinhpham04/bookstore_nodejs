@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'productId',
         as: 'images'
       }); 
-      Product.hasMany(models.OderItem, {
+      Product.hasMany(models.OrderItem, {
         foreignKey: 'productId',
         as: 'oderItems'
       }); 
@@ -25,6 +25,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'productId',
         as: 'voucherProducts'
       });
+      Product.hasMany(models.Stock, {
+        foreignKey: 'productId', 
+        as: 'stocks'
+      });
+      Product.hasMany(models.Review, {
+        foreignKey: 'productId',
+        as:'reviews'
+      })
     }
   }
   Product.init({ // không cần khai báo khóa chính 
@@ -34,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     publisher: DataTypes.STRING,
     bookLayout: DataTypes.STRING,
     price: DataTypes.INTEGER,
+    originalPrice: DataTypes.INTEGER,
     productCode: DataTypes.STRING,
     publishYear: DataTypes.INTEGER,
     language: DataTypes.STRING,

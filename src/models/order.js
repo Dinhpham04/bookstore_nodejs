@@ -4,15 +4,15 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Order extends Model {
-    static associate(models) { 
+    static associate(models) {
       Order.belongsTo(models.User, {
-        foreignKey: 'customerId', 
-        as: 'customer'
-      }); 
+        foreignKey: 'userId',
+        as: 'user'
+      });
       Order.hasMany(models.OrderItem, {
-        foreignKey: 'cartId', 
+        foreignKey: 'orderId',
         as: 'orderItems'
-      }); 
+      });
     }
   }
   Order.init({ // không cần khai báo khóa chính 

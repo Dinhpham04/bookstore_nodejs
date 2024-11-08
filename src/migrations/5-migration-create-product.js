@@ -37,6 +37,9 @@ module.exports = {
       price: {
         type: Sequelize.INTEGER
       },
+      originalPrice: {
+        type: Sequelize.INTEGER
+      },
       productCode: {
         type: Sequelize.STRING
       },
@@ -61,6 +64,8 @@ module.exports = {
       description: {
         type: Sequelize.TEXT
       },
+      // thêm OrginalPrice, ratingStar
+
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
