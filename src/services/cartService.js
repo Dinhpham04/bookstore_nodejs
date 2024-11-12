@@ -136,7 +136,9 @@ let getCart = async (userId) => {
                 isCheckedOut: item.isCheckedOut,
             }
         })
-        const totalAmount = cartDetails.reduce((acc, item) => acc + item.totalPrice, 0);
+        const totalAmount = cartDetails.reduce((acc, item) =>
+            acc + (item.isChecked ? item.totalPrice : 0)
+            , 0);
         const totalQuantity = cartDetails.length;
         return {
             statusCode: 200,
@@ -153,7 +155,96 @@ let getCart = async (userId) => {
     }
 }
 
+let updateCartItem = async (cartItemId, quantity, isChecked) => {
+    try {
+        if (!cartItemId || (!quantity && !isChecked)) {
+            return {
+                statusCode: 400,
+                message: 'missing parameter',
+            }
+        }
+        const cartItem = await db.CartItem.findOne({
+            where: { id: cartItemId },
+            include: [
+                {
+                    model: db.Product,
+                    as: 'product'
+                }
+            ]
+        })
+
+
+        if (!cartItem) {
+            return {
+                statusCode: 404,
+                message: 'Cart item not found',
+            }
+        }
+        // Kiểm tra và cập nhật số lượng nếu có 
+        if (quantity && quantity > cartItem.product.quantityAvailable) {
+            return {
+                statusCode: 400,
+                statusMes: 'STOCK_INSUFFICIENT',
+                message: `Số lượng yêu cầu cho ${quantity} không có sẵn`,
+                quantityAvailable: cartItem.product.quantityAvailable
+            }
+        } else if (quantity && quantity <= cartItem.product.quantityAvailable) {
+            cartItem.quantity = quantity;
+        }
+        if (isChecked !== undefined) {
+            cartItem.isChecked = isChecked;
+        }
+        await cartItem.save();
+
+        return {
+            statusCode: 200,
+            statusMes: 'CART_ITEM_UPDATED',
+            message: 'CartItem update successfully',
+        }
+
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
+
+
+let deleteCartItem = async (cartItemId) => {
+    try {
+        if (!cartItemId) {
+            return {
+                statusCode: 400,
+                message: 'Missing parameter',
+            }
+        }
+
+        const cartItem = await db.CartItem.findOne({ where: { id: cartItemId } });
+        if (!cartItem) {
+            return {
+                statusCode: 404,
+                message: 'Cart item not found',
+            }
+        }
+
+        await cartItem.destroy();
+        return {
+            statusCode: 200,
+            statusMes: 'CART_ITEM_DELETED',
+            message: 'CartItem deleted successfully',
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
+
 module.exports = {
     addToCart,
     getCart,
+    updateCartItem,
+    deleteCartItem
 }

@@ -28,7 +28,37 @@ let handleGetCart = async (req, res) => {
     }
 }
 
+let handleUpdateCartItem = async (req, res) => {
+    try {
+        const { cartItemId, quantity, isChecked } = req.body;
+        const respon = await cartService.updateCartItem(cartItemId, quantity, isChecked);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message,
+        })
+    }
+}
+
+let handleDeleteCartItem = async (req, res) => {
+    try {
+        const cartItemId = req.query.cartItemId;
+        const respon = await cartService.deleteCartItem(cartItemId);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        })
+    } catch (error) {
+
+    }
+}
+
 module.exports = {
     handleAddToCart,
     handleGetCart,
+    handleUpdateCartItem,
+    handleDeleteCartItem
 }

@@ -19,6 +19,16 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      addressId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Addresses',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
       status: {
         type: Sequelize.ENUM('pending_payment', 'processing', 'shipping', 'completed', 'returned'),
         allowNull: false,
@@ -56,6 +66,7 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Orders');

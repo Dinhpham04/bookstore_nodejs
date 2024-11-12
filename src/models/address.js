@@ -9,9 +9,16 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'userId',
                 as: 'user'
             });
+            Address.hasOne(models.Order, {
+                foreignKey: 'addressId',
+                as: 'order'
+            })
         }
     }
     Address.init({ // không cần khai báo khóa chính 
+        // Thêm trường tên người nhận và số điện thoại 
+        recipientName: DataTypes.STRING,
+        phoneNumber: DataTypes.STRING,
         city: DataTypes.STRING,
         district: DataTypes.STRING,
         ward: DataTypes.STRING,

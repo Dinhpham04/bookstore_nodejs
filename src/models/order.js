@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'orderId',
         as: 'orderItems'
       });
+      Order.belongsTo(models.Address, {
+        foreignKey: 'addressId',
+        as: 'address'
+      })
     }
   }
   Order.init({ // không cần khai báo khóa chính 
