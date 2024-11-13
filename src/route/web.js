@@ -1,22 +1,12 @@
 import express from "express";
-import homeController from "../controllers/homeController";
 import userController from "../controllers/userController";
 import productController from "../controllers/productController";
 import cartController from "../controllers/cartController";
-import orderController from "../controllers/orderController";
+import addressController from "../controllers/addressController";
 import authenticateToken from "../utils/authenticateToken";
 let router = express.Router();
 
-let initWebRoutes = (app) => {  // khởi tạo các router 
-    // router.get("/", homeController.getHomePage);
-    // router.get("/about", homeController.getAboutMe);
-    // router.get("/crud", homeController.getCRUD);
-    // router.post("/post-crud", homeController.postCRUD);
-    // router.get("/get-crud", homeController.displayGetCRUD);
-    // router.get("/edit-crud", homeController.getEditCRUD);
-    // router.post("/put-crud", homeController.putCRUD);
-    // router.get("/delete-crud", homeController.deleteCRUD);
-
+let initWebRoutes = (app) => {
     // API 
     router.post('/api/login', userController.handleLogin);
     router.get('/api/get-all-users', userController.handleGetAllUsers);
@@ -37,8 +27,12 @@ let initWebRoutes = (app) => {  // khởi tạo các router
     router.put('/api/update-cartitem', cartController.handleUpdateCartItem);
     router.delete('/api/delete-cartitem', cartController.handleDeleteCartItem);
 
-    // API order 
-    router.get('/api/get-address', orderController.handleGetAddress);
+    // API address
+    router.get('/api/get-address', addressController.handleGetAddress);
+    router.post('/api/add-address', addressController.handleAddAddress);
+    router.put('/api/edit-address', addressController.handleEditAddress);
+    router.put('/api/set-address-default', addressController.handleSetAddressDefault);
+
     // rest api 
     return app.use("/", router);
 }

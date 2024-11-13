@@ -31,7 +31,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       district: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT // cập nhật lại thành string 
       },
       ward: {
         type: Sequelize.STRING

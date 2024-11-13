@@ -27,7 +27,7 @@ let handleUserLogin = async (email, password) => {
                     userData.errMessage = 'Login successful';
                     const { password, ...userInfo } = user
                     userData.user = userInfo;
-                    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '4h' });
+                    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
                     userData.token = token;
                 } else {
                     userData.statusCode = 401;  // Unauthorized
