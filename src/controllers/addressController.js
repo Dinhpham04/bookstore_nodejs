@@ -1,10 +1,10 @@
-import orderService from '../services/addressService';
+import addressService from '../services/addressService';
 
 
 let handleGetAddress = async (req, res) => {
     try {
         const userId = req.query.userId;
-        const respon = await orderService.getAddress(userId);
+        const respon = await addressService.getAddress(userId);
         const { statusCode, ...data } = respon;
         res.status(statusCode).json({
             ...data,
@@ -19,7 +19,7 @@ let handleGetAddress = async (req, res) => {
 
 let handleAddAddress = async (req, res) => {
     try {
-        const respon = await orderService.addAddress(req.body);
+        const respon = await addressService.addAddress(req.body);
         const { statusCode, ...data } = respon;
         res.status(statusCode).json({
             ...data,
@@ -34,7 +34,7 @@ let handleAddAddress = async (req, res) => {
 
 let handleEditAddress = async (req, res) => {
     try {
-        const respon = await orderService.editAddress(req.body);
+        const respon = await addressService.editAddress(req.body);
         const { statusCode, ...data } = respon;
         res.status(statusCode).json({
             ...data,
@@ -51,7 +51,7 @@ let handleEditAddress = async (req, res) => {
 let handleSetAddressDefault = async (req, res) => {
     try {
         const addressId = req.body.addressId;
-        const respon = await orderService.setAddressDefault(addressId);
+        const respon = await addressService.setAddressDefault(addressId);
         const { statusCode, ...data } = respon;
         res.status(statusCode).json({
             ...data,
@@ -64,11 +64,25 @@ let handleSetAddressDefault = async (req, res) => {
     }
 }
 
-
+let handleDeleteAddress = async (req, res) => {
+    try {
+        let addressId = req.query.addressId;
+        const respon = await addressService.deleteAddress(addressId);
+        res.status(respon.statusCode).json({
+            message: respon.message,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
 
 module.exports = {
     handleGetAddress,
     handleAddAddress,
     handleEditAddress,
     handleSetAddressDefault,
+    handleDeleteAddress,
 }

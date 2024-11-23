@@ -3,6 +3,7 @@ import userController from "../controllers/userController";
 import productController from "../controllers/productController";
 import cartController from "../controllers/cartController";
 import addressController from "../controllers/addressController";
+import orderController from "../controllers/orderController";
 import authenticateToken from "../utils/authenticateToken";
 let router = express.Router();
 
@@ -32,7 +33,13 @@ let initWebRoutes = (app) => {
     router.post('/api/add-address', addressController.handleAddAddress);
     router.put('/api/edit-address', addressController.handleEditAddress);
     router.put('/api/set-address-default', addressController.handleSetAddressDefault);
+    router.delete('/api/delete-address', addressController.handleDeleteAddress);
 
+    // API order 
+    router.get('/api/checkout', orderController.handleCheckout);
+    router.post('/api/create-order', orderController.handleCreateOrder);
+    router.get('/api/return-order', orderController.handleReturnOrder);
+    router.get('/api/cancel-order', orderController.handleCancelOrder);
     // rest api 
     return app.use("/", router);
 }

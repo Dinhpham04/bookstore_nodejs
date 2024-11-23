@@ -1,5 +1,7 @@
 import db from '../models/index';
-
+const axios = require('axios');
+const crypto = require('crypto');
+require('dotenv').config();
 let shippingPrice = (origin, destination, weight, serviceType = "standard") => {
     try {
         const shippingRates = {
@@ -167,6 +169,13 @@ let createOrder = async (data) => {
             }
         });
 
+        if (!address) {
+            return {
+                statusCode: 404,
+                message: 'Default address not found, please add address',
+            }
+        }
+
         const { items, totalAmount, shippingFee, } = await checkOrder(userId);
         if (!items) {
             return {
@@ -175,10 +184,19 @@ let createOrder = async (data) => {
             }
         }
 
+        // Trừ số lượng sản phẩm khả dụng 
+        for (const item of items) {
+            await db.Product.update(
+                { quantityAvailable: db.sequelize.literal(`quantityAvailable - ${item.quantity}`) },
+                { where: { id: item.productId } }
+            );
+        }
+
         const order = await db.Order.create({
             userId,
             addressId: address.id,
             orderDate: new Date(),
+            status: paymentMethod === 'cart_on_delivery' ? 'shipping' : 'pending_payment',
             paymentMethod,
             paymentStatus: 'unpaid',
             totalAmount,
@@ -208,23 +226,41 @@ let createOrder = async (data) => {
             }
         }
 
-        // await CartItem.destroy({
-        //     where: {
-        //         isChecked: true,
-        //     },
-        //     include: [
-        //         {
-        //             model: db.Cart,
-        //             as: 'cart',
-        //             where: {
-        //                 userId
-        //             }
-        //         }
-        //     ]
-        // })
+        await db.CartItem.destroy({
+            where: {
+                isChecked: true,
+            },
+            include: [
+                {
+                    model: db.Cart,
+                    as: 'cart',
+                    where: {
+                        userId
+                    }
+                }
+            ]
+        })
+
+        if (paymentMethod === 'bank_transfer') {
+            const paymentUrl = await processPayment({
+                orderCode: order.id,
+                amount: parseInt(order.totalAmount + order.shippingFee),
+                description: '',
+                cancelUrl: `http://localhost:8080/api/cancel-order`,
+                returnUrl: `http://localhost:8080/api/return-order`,
+            })
+            return {
+                statusCode: 200,
+                message: 'Order created, please wait for payment',
+                paymentMethod: paymentMethod,
+                paymentUrl,
+            }
+        }
+
         return {
             statusCode: 200,
-            message: 'Order created'
+            message: 'Order created',
+            paymentMethod: paymentMethod,
         }
     } catch (error) {
         return {
@@ -235,6 +271,54 @@ let createOrder = async (data) => {
 
 
 }
+
+const processPayment = async ({ orderCode, amount, description, returnUrl, cancelUrl }) => {
+    try {
+        // Tạo chữ ký (signature)
+        const signatureString = `amount=${amount}&cancelUrl=${cancelUrl}&description=${description}&orderCode=${orderCode}&returnUrl=${returnUrl}`;
+        const signature = crypto.createHmac('sha256', process.env.CHECKSUM_KEY)
+            .update(signatureString)
+            .digest('hex');
+
+        // Tạo dữ liệu gửi tới API
+        const requestBody = {
+            orderCode,
+            amount,
+            description,
+            cancelUrl,
+            returnUrl,
+            signature
+        };
+        // Cấu hình header
+        const headers = {
+            'x-client-id': '9839db1c-a791-4996-b43b-7032bd5d93ad',
+            'x-api-key': 'e9696bbf-e940-46dc-95e8-96f6301f31a2',
+            'Content-Type': 'application/json'
+        };
+
+        //Gửi request tới API
+        const response = await axios.post(
+            'https://api-merchant.payos.vn/v2/payment-requests',
+            JSON.stringify(requestBody),
+            { headers, timeout: 10000 } // Timeout 10 giây
+        );
+
+        //Xử lý phản hồi từ API
+        if (response.data) {
+            return response.data.data.checkoutUrl;
+        } else {
+            console.error('Invalid API response:', response.data);
+            throw new Error('Failed to retrieve checkout URL');
+        }
+    } catch (e) {
+        if (e.response) {
+            console.error('API Error:', e.response.data);
+        } else {
+            console.error('Error:', e.message);
+        }
+        throw e;
+    }
+};
 
 
 module.exports = {

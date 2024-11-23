@@ -156,9 +156,51 @@ let setAddressDefault = async (addressId) => {
 
 }
 
+let deleteAddress = async (addressId) => {
+    try {
+        if (!addressId) {
+            return {
+                statusCode: 400,
+                message: 'Missing address ID'
+            }
+        }
+        const address = await db.Address.findOne({
+            where: { id: addressId },
+        })
+
+        if (!address) {
+            return {
+                statusCode: 404,
+                message: 'Address not found'
+            }
+        }
+        const isDefault = address.isDefault;
+        const userId = address.userId;
+        await address.destroy({ where: { id: addressId } });
+        if (isDefault) {
+            const firstAddress = await db.Address.findOne({
+                where: { userId: userId },
+                order: [['id', 'ASC']]
+            });
+            if (firstAddress) {
+                await firstAddress.update({ isDefault: true });
+            }
+        }
+        return {
+            statusCode: 200,
+            message: 'Delete address successfully',
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
 module.exports = {
     getAddress,
     editAddress,
     addAddress,
     setAddressDefault,
+    deleteAddress,
 }
