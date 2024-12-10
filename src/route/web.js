@@ -12,7 +12,7 @@ let initWebRoutes = (app) => {
     router.post('/api/login', userController.handleLogin);
     router.get('/api/get-all-users', userController.handleGetAllUsers);
     router.post('/api/create-new-user', userController.handleCreateNewUser);
-    router.put('/api/edit-user', userController.handleEditUser);
+    router.patch('/api/edit-user', userController.handleEditUser);
     router.delete('/api/delete-user', userController.handleDeleteUser);
     router.get('/api/getUserInfo', authenticateToken, userController.handleGetUserInfo);
 
@@ -25,14 +25,14 @@ let initWebRoutes = (app) => {
     // API cart 
     router.post('/api/add-to-cart', cartController.handleAddToCart);
     router.get('/api/get-cart', cartController.handleGetCart);
-    router.put('/api/update-cartitem', cartController.handleUpdateCartItem);
+    router.patch('/api/update-cartitem', cartController.handleUpdateCartItem);
     router.delete('/api/delete-cartitem', cartController.handleDeleteCartItem);
 
     // API address
     router.get('/api/get-address', addressController.handleGetAddress);
     router.post('/api/add-address', addressController.handleAddAddress);
-    router.put('/api/edit-address', addressController.handleEditAddress);
-    router.put('/api/set-address-default', addressController.handleSetAddressDefault);
+    router.patch('/api/edit-address', addressController.handleEditAddress);
+    router.patch('/api/set-address-default', addressController.handleSetAddressDefault);
     router.delete('/api/delete-address', addressController.handleDeleteAddress);
 
     // API order 
