@@ -118,9 +118,26 @@ let handleCancelOrder = async (req, res) => {
     }
 }
 
+let handleGetMyOrders = async (req, res) => {
+    try {
+        const { userId, status } = req.query;
+        const respon = await orderService.getMyOrders(userId, status);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     handleCheckout,
     handleCreateOrder,
     handleReturnOrder,
     handleCancelOrder,
+    handleGetMyOrders,
 }

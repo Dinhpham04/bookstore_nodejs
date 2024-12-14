@@ -1,6 +1,7 @@
 import db from '../models/index';
 const axios = require('axios');
 const crypto = require('crypto');
+import { Op, fn, col, literal } from 'sequelize';
 require('dotenv').config();
 let shippingPrice = (origin, destination, weight, serviceType = "standard") => {
     try {
@@ -320,9 +321,83 @@ const processPayment = async ({ orderCode, amount, description, returnUrl, cance
     }
 };
 
+let getMyOrders = async (userId, status) => {
+    try {
+        if (!userId || !status) {
+            return {
+                statusCode: 400,
+                message: 'Missing parameter',
+            }
+        }
+        let orders = await db.Order.findAll({
+            where: { userId, status },
+            include: [
+                { model: db.Address, as: 'address' },
+                {
+                    model: db.OrderItem, as: 'orderItems',
+                    include: [
+                        {
+                            model: db.Product,
+                            as: 'product',
+                            attributes: ['id', 'name', 'price', 'originalPrice', 'weight',
+                                [
+                                    db.sequelize.literal(
+                                        `(SELECT url FROM Images WHERE Images.productId = orderItems.productId AND Images.isPrimary = true )`
+                                    ),
+                                    'image'
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        })
+        if (!orders) {
+            return {
+                statusCode: 404,
+                message: 'No order found',
+            }
+        }
+        orders = orders.map(order => {
+            let products = order.orderItems.map(orderItem => {
+                return {
+                    id: orderItem.product.id,
+                    name: orderItem.product.name,
+                    price: orderItem.product.price,
+                    originalPrice: orderItem.product.originalPrice,
+                    image: orderItem.product.image,
+                    quantity: orderItem.quantity,
+                    totalPrice: orderItem.quantity * orderItem.product.price,
+                }
+            })
+            return {
+                orderCode: order.id,
+                status: order.status,
+                orderDate: order.orderDate,
+                paymentMethod: order.paymentMethod,
+                paymentStatus: order.paymentStatus,
+                totalAmount: order.totalAmount,
+                shippingFee: parseInt(order.shippingFee),
+                total: order.totalAmount + parseInt(order.shippingFee),
+                note: order.note,
+                address: order.address,
+                products
+            }
+        })
+        return {
+            statusCode: 200,
+            orders
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while getting orders' + error.message
+        }
+    }
+}
 
 module.exports = {
     checkOrder,
     createOrder,
-
+    getMyOrders,
 }
