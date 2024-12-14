@@ -28,7 +28,7 @@ let initWebRoutes = (app) => {
     router.get('/api/get-cart', cartController.handleGetCart);
     router.patch('/api/update-cartitem', cartController.handleUpdateCartItem);
     router.delete('/api/delete-cartitem', cartController.handleDeleteCartItem);
-
+    router.patch('/api/check-all-cartitem', cartController.handleCheckAllCartItem);
     // API address
     router.get('/api/get-address', addressController.handleGetAddress);
     router.post('/api/add-address', addressController.handleAddAddress);

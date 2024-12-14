@@ -210,6 +210,41 @@ let updateCartItem = async (cartItemId, quantity, isChecked) => {
     }
 }
 
+let checkAllCartItem = async (userId, isChecked) => {
+    try {
+        if (!userId || !isChecked) {
+            return {
+                statusCode: 400,
+                message: 'Missing parameter',
+            }
+        }
+        const cartItems = await db.CartItem.findAll({
+            includes: [
+                { model: db.Cart, where: { userId: userId } }
+            ]
+        })
+        if (!cartItems) {
+            return {
+                statusCode: 404,
+                message: 'Cart items not found',
+            }
+        }
+        await db.CartItem.update({
+            isChecked: isChecked
+        }, { where: {} })
+        return {
+            statusCode: 200,
+            statusMes: 'ALL_CART_ITEMS_UPDATED',
+            message: 'All cart items updated successfully',
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
+
 
 let deleteCartItem = async (cartItemId) => {
     try {
@@ -246,5 +281,6 @@ module.exports = {
     addToCart,
     getCart,
     updateCartItem,
+    checkAllCartItem,
     deleteCartItem
 }

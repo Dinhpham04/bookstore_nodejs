@@ -43,6 +43,21 @@ let handleUpdateCartItem = async (req, res) => {
     }
 }
 
+let handleCheckAllCartItem = async (req, res) => {
+    try {
+        const { userId, isChecked } = req.body;
+        const respon = await cartService.checkAllCartItem(userId, isChecked);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: error.message,
+        })
+    }
+}
+
 let handleDeleteCartItem = async (req, res) => {
     try {
         const cartItemId = req.query.cartItemId;
@@ -60,5 +75,6 @@ module.exports = {
     handleAddToCart,
     handleGetCart,
     handleUpdateCartItem,
-    handleDeleteCartItem
+    handleDeleteCartItem,
+    handleCheckAllCartItem
 }
