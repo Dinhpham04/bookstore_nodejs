@@ -156,7 +156,7 @@ let createOrder = async (data) => {
                 message: 'Missing parameter',
             }
         }
-        if (paymentMethod != 'cart_on_delivery' && paymentMethod != 'bank_transfer') {
+        if (paymentMethod != 'cash_on_delivery' && paymentMethod != 'bank_transfer') {
             return {
                 statusCode: 400,
                 message: 'Invalid payment method',
@@ -196,7 +196,7 @@ let createOrder = async (data) => {
             userId,
             addressId: address.id,
             orderDate: new Date(),
-            status: paymentMethod === 'cart_on_delivery' ? 'shipping' : 'pending_payment',
+            status: paymentMethod === 'cash_on_delivery' ? 'shipping' : 'pending_payment',
             paymentMethod,
             paymentStatus: 'unpaid',
             totalAmount,
