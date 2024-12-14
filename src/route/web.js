@@ -21,6 +21,7 @@ let initWebRoutes = (app) => {
     router.get('/api/get-products', productController.handleGetProducts);
     router.get('/api/get-product-details', productController.handleGetProductDetails);
     router.get('/api/get-products-related', productController.handleGetProductsRelated);
+    router.get('/api/get-bestseller', productController.handleBestSeller);
 
     // API cart 
     router.post('/api/add-to-cart', cartController.handleAddToCart);

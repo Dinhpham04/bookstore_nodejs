@@ -41,9 +41,20 @@ let handleGetProductsRelated = async (req, res) => {
     })
 }
 
+let handleBestSeller = async (req, res) => {
+    let params = req.query;
+    let respon = await productService.getProductsBestSeller(params);
+    res.status(respon.statusCode).json({
+        message: respon.message,
+        products: (respon.data ? respon.data : {}),
+        pagination: respon.pagination
+    })
+}
+
 module.exports = {
     handleGetAllCategories,
     handleGetProducts,
     handleGetProductDetails,
-    handleGetProductsRelated
+    handleGetProductsRelated,
+    handleBestSeller,
 }
