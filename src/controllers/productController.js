@@ -51,10 +51,27 @@ let handleBestSeller = async (req, res) => {
     })
 }
 
+let handleSearchProducts = async (req, res) => {
+    try {
+        let respon = await productService.getProductsSearch(req.query);
+        const { statusCode, message, ...data } = respon;
+        res.status(respon.statusCode).json({
+            message,
+            ...data,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     handleGetAllCategories,
     handleGetProducts,
     handleGetProductDetails,
     handleGetProductsRelated,
     handleBestSeller,
+    handleSearchProducts,
 }

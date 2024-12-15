@@ -393,7 +393,130 @@ let getProductsBestSeller = async (params) => {
             message: 'An error occurred: ' + e.message,
         };
     }
+
 };
+
+let removeDiacritics = (str) => {
+    const accentsMap = [
+        "aàảãáạăằẳẵắặâầẩẫấậ",
+        "AÀẢÃÁẠĂẰẲẴẮẶÂẦẨẪẤẬ",
+        "dđ", "DĐ",
+        "eèẻẽéẹêềểễếệ",
+        "EÈẺẼÉẸÊỀỂỄẾỆ",
+        "iìỉĩíị",
+        "IÌỈĨÍỊ",
+        "oòỏõóọôồổỗốộơờởỡớợ",
+        "OÒỎÕÓỌÔỒỔỖỐỘƠỜỞỠỚỢ",
+        "uùủũúụưừửữứự",
+        "UÙỦŨÚỤƯỪỬỮỨỰ",
+        "yỳỷỹýỵ",
+        "YỲỶỸÝỴ"
+    ];
+
+    for (const map of accentsMap) {
+        const pattern = new RegExp(`[${map.slice(1)}]`, 'g');
+        str = str.replace(pattern, map[0]);
+    }
+
+    return str;
+}
+let getProductsSearch = async (params) => {
+    try {
+        const { keys, filter = "relevance", page = 1, limit = 10 } = params;
+        if (!keys) return res.status(400).json({ message: "Vui lòng nhập từ khóa tìm kiếm!" });
+        const originalKeyword = keys.trim().toLowerCase();
+        const normalizedKeyword = removeDiacritics(originalKeyword);
+
+        const pageInt = parseInt(page, 10) || 1;
+        const limitInt = parseInt(limit, 10) || 10;
+        const offset = (pageInt - 1) * limitInt;
+
+        // Kết quả tìm kiếm
+        let books = [];
+        // Ví dụ, từ bạn nhập vào
+
+        books = await db.Product.findAll({
+            where: literal(`name COLLATE utf8mb4_vietnamese_ci LIKE '%${originalKeyword}%'`),
+            offset, // Phân trang - offset
+            limit: limitInt, // Phân trang - limit
+            attributes: [
+                'id', 'name', 'price', 'originalPrice', 'quantityAvailable',
+                [
+                    db.sequelize.cast(
+                        db.sequelize.literal(
+                            `(SELECT COALESCE(AVG(rating), 0) FROM Reviews WHERE Reviews.productId = Product.id)`
+                        ),
+                        'FLOAT'
+                    ),
+                    'averageRating'
+                ],
+                [
+                    db.sequelize.literal(
+                        `(SELECT url FROM Images WHERE Images.productId = Product.id AND Images.isPrimary = true )`
+                    ),
+                    'image'
+                ],
+            ]
+        });
+
+
+        //3. Nếu vẫn không có, tách thành từ lẻ (có dấu) và tìm
+        if (books.length === 0) {
+            const words = originalKeyword.split(" ");
+            books = await db.Product.findAll({
+                where: {
+                    [Op.and]: words.map((word) => ({
+                        name: { [Op.like]: `%${word}%` },
+                    })),
+                },
+                offset, // Phân trang - offset
+                limit: limitInt, // Phân trang - limit,
+                attributes: [
+                    'id', 'name', 'price', 'originalPrice', 'quantityAvailable',
+                    [
+                        db.sequelize.cast(
+                            db.sequelize.literal(
+                                `(SELECT COALESCE(AVG(rating), 0) FROM Reviews WHERE Reviews.productId = Product.id)`
+                            ),
+                            'FLOAT'
+                        ),
+                        'averageRating'
+                    ],
+                    [
+                        db.sequelize.literal(
+                            `(SELECT url FROM Images WHERE Images.productId = Product.id AND Images.isPrimary = true )`
+                        ),
+                        'image'
+                    ],
+                ]
+            });
+        }
+
+        // 5. Sắp xếp kết quả theo `filter`
+        if (filter === "price_asc") {
+            books.sort((a, b) => a.price - b.price);
+        } else if (filter === "price_desc") {
+            books.sort((a, b) => b.price - a.price);
+        } // Default "relevance" giữ nguyên thứ tự
+
+        return {
+            statusCode: 200,
+            message: "Get products search successfully",
+            data: books,
+            pagination: {
+                page: pageInt,
+                limit: limitInt,
+                total: books.length,
+            },
+
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'An error occurred: ' + error.message,
+        }
+    }
+}
 
 
 module.exports = {
@@ -401,5 +524,6 @@ module.exports = {
     getProducts,
     getProductDetails,
     getProductsRelated,
-    getProductsBestSeller
+    getProductsBestSeller,
+    getProductsSearch
 }

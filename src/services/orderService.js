@@ -323,7 +323,7 @@ const processPayment = async ({ orderCode, amount, description, returnUrl, cance
 
 let getMyOrders = async (userId, status) => {
     try {
-        if (!userId || !status) {
+        if (!userId) {
             return {
                 statusCode: 400,
                 message: 'Missing parameter',
