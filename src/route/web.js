@@ -5,6 +5,7 @@ import cartController from "../controllers/cartController";
 import addressController from "../controllers/addressController";
 import orderController from "../controllers/orderController";
 import authenticateToken from "../utils/authenticateToken";
+import bannerController from "../controllers/bannerController";
 let router = express.Router();
 
 let initWebRoutes = (app) => {
@@ -51,6 +52,13 @@ let initWebRoutes = (app) => {
     router.delete('/api/delete-product', productController.handleDeleteProduct);
     router.patch('/api/update-product', productController.handleUpdateProduct);
     router.post('/api/add-product', productController.handleAddProduct)
+
+    // thêm/sửa/xóa banner
+    router.delete('/api/delete-banner', bannerController.handleDeleteBanner);
+    router.patch('/api/update-banner', bannerController.handleUpdateBanner);
+    router.post('/api/add-banner', bannerController.handleAddBanner);
+    router.get('/api/get-banner-by-id', bannerController.handleGetBannerById);
+    router.get('/api/get-banners', bannerController.handleGetBanners)
     return app.use("/", router);
 }
 
