@@ -45,6 +45,12 @@ let initWebRoutes = (app) => {
     router.get('/api/cancel-order', orderController.handleCancelOrder);
     router.get('/api/get-my-orders', orderController.handleGetMyOrders);
     // rest api 
+
+    // admin 
+    // thêm/sửa/xóa/sản phẩm 
+    router.delete('/api/delete-product', productController.handleDeleteProduct);
+    router.patch('/api/update-product', productController.handleUpdateProduct);
+    router.post('/api/add-product', productController.handleAddProduct)
     return app.use("/", router);
 }
 

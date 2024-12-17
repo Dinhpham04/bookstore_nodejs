@@ -518,6 +518,125 @@ let getProductsSearch = async (params) => {
     }
 }
 
+let deleteProduct = async (productId) => {
+    try {
+        if (!productId) {
+            return {
+                statusCode: 400,
+                message: "missing productId"
+            }
+        }
+        const product = await db.Product.findByPk(productId);
+        if (!product) {
+            return {
+                statusCode: 404,
+                message: "Product not found"
+            }
+        }
+        await product.destroy();
+        return {
+            statusCode: 200,
+            message: "Product deleted successfully"
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'An error occurred: ' + error.message,
+        }
+    }
+}
+
+let updateProduct = async (body) => {
+    try {
+        if (!body.productId) {
+            return {
+                statusCode: 400,
+                message: "missing productId"
+            }
+        }
+        const product = await db.Product.findByPk(body.productId);
+        if (!product) {
+            return {
+                statusCode: 404,
+                message: "Product not found"
+            }
+        }
+        await product.update({
+            name: body.name,
+            author: body.author,
+            supplier: body.supplier,
+            publisher: body.publisher,
+            bookLayout: body.bookLayout,
+            price: body.price,
+            originalPrice: body.originalPrice,
+            productCode: body.productCode,
+            publishYear: body.publishYear,
+            language: body.language,
+            weight: body.weight,
+            size: body.size,
+            quantityOfPages: body.quantityOfPages,
+            quantityAvailable: body.quantityAvailable,
+            description: body.description,
+        })
+        return {
+            statusCode: 200,
+            message: "Product updated successfully"
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'An error occurred: ' + error.message,
+        }
+    }
+}
+
+let addProduct = async (body) => {
+    try {
+        if (!body.name || !body.genreId || !body.price || !body.originalPrice) {
+            return {
+                statusCode: 400,
+                message: "Missing name, genreId,  price or originalPrice"
+            }
+        }
+        let product = await db.Product.create({
+            name: body.name,
+            genreId: body.genreId,
+            author: body.author,
+            supplier: body.supplier,
+            publisher: body.publisher,
+            bookLayout: body.bookLayout,
+            price: body.price,
+            originalPrice: body.originalPrice,
+            productCode: body.productCode,
+            publishYear: body.publishYear,
+            language: body.language,
+            weight: body.weight,
+            size: body.size,
+            quantityOfPages: body.quantityOfPages,
+            quantityAvailable: body.quantityAvailable,
+            description: body.description,
+        })
+
+        // Upload image
+        if (body.image) {
+            const imageUrl = body.image;
+            await db.Image.create({
+                productId: product.id,
+                url: imageUrl,
+                isPrimary: true,
+            });
+        }
+        return {
+            statusCode: 201,
+            message: "Product created successfully"
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'An error occurred: ' + error.message,
+        }
+    }
+}
 
 module.exports = {
     getAllCategories,
@@ -525,5 +644,8 @@ module.exports = {
     getProductDetails,
     getProductsRelated,
     getProductsBestSeller,
-    getProductsSearch
+    getProductsSearch,
+    deleteProduct,
+    updateProduct,
+    addProduct,
 }

@@ -67,6 +67,49 @@ let handleSearchProducts = async (req, res) => {
     }
 }
 
+let handleDeleteProduct = async (req, res) => {
+    try {
+        const productId = req.query.productId;
+        const respon = await productService.deleteProduct(productId);
+        res.status(respon.statusCode).json({
+            message: respon.message,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
+let handleUpdateProduct = async (req, res) => {
+    try {
+        const respon = await productService.updateProduct(req.body);
+        res.status(respon.statusCode).json({
+            message: respon.message,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
+let handleAddProduct = async (req, res) => {
+    try {
+        const respon = await productService.addProduct(req.body);
+        res.status(respon.statusCode).json({
+            message: respon.message,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     handleGetAllCategories,
     handleGetProducts,
@@ -74,4 +117,7 @@ module.exports = {
     handleGetProductsRelated,
     handleBestSeller,
     handleSearchProducts,
+    handleDeleteProduct,
+    handleUpdateProduct,
+    handleAddProduct
 }
