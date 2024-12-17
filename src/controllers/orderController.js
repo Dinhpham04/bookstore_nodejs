@@ -52,7 +52,7 @@ let handleReturnOrder = async (req, res) => {
             })
         }
 
-        order.status = 'shipping';
+        order.status = 'processing';
         order.paymentStatus = 'paid';
         await order.save();
         return res.status(200).json({
@@ -134,10 +134,42 @@ let handleGetMyOrders = async (req, res) => {
     }
 }
 
+let handleOrderStatistics = async (req, res) => {
+    try {
+        const respon = await orderService.getOrderStatistics(req.query);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
+let handleGetRevenueStatistics = async (req, res) => {
+    try {
+        const respon = await orderService.getRevenueStatistics(req.query);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     handleCheckout,
     handleCreateOrder,
     handleReturnOrder,
     handleCancelOrder,
     handleGetMyOrders,
+    handleOrderStatistics,
+    handleGetRevenueStatistics
 }

@@ -197,7 +197,7 @@ let createOrder = async (data) => {
             userId,
             addressId: address.id,
             orderDate: new Date(),
-            status: paymentMethod === 'cash_on_delivery' ? 'shipping' : 'pending_payment',
+            status: paymentMethod === 'cash_on_delivery' ? 'processing' : 'pending_payment',
             paymentMethod,
             paymentStatus: 'unpaid',
             totalAmount,
@@ -227,28 +227,28 @@ let createOrder = async (data) => {
             }
         }
 
-        await db.CartItem.destroy({
-            where: {
-                isChecked: true,
-            },
-            include: [
-                {
-                    model: db.Cart,
-                    as: 'cart',
-                    where: {
-                        userId
-                    }
-                }
-            ]
-        })
+        // await db.CartItem.destroy({
+        //     where: {
+        //         isChecked: true,
+        //     },
+        //     include: [
+        //         {
+        //             model: db.Cart,
+        //             as: 'cart',
+        //             where: {
+        //                 userId
+        //             }
+        //         }
+        //     ]
+        // })
 
         if (paymentMethod === 'bank_transfer') {
             const paymentUrl = await processPayment({
                 orderCode: order.id,
                 amount: parseInt(order.totalAmount + order.shippingFee),
                 description: '',
-                cancelUrl: `http://localhost:8080/api/cancel-order`,
-                returnUrl: `http://localhost:8080/api/return-order`,
+                cancelUrl: `http://localhost:8081/api/cancel-order`,
+                returnUrl: `http://localhost:8081/api/return-order`,
             })
             return {
                 statusCode: 200,
@@ -400,8 +400,189 @@ let getMyOrders = async (userId, status) => {
     }
 }
 
+let getOrderStatistics = async (query) => {
+    try {
+        const { timeRange, startDate, endDate } = query;
+        if (!timeRange && !(startDate && endDate)) {
+            return {
+                statusCode: 400,
+                message: 'Missing parameter',
+            }
+        }
+        let start, end;
+        // Xử lý khoảng thời gian dựa vào timeRange
+        const currentDate = new Date();
+        switch (timeRange) {
+            case 'day':
+                start = new Date(currentDate.setHours(0, 0, 0, 0)); // Đầu ngày
+                end = new Date(currentDate.setHours(23, 59, 59, 999)); // Cuối ngày
+                break;
+            case 'week':
+                const weekStart = currentDate.getDate() - currentDate.getDay(); // Chủ nhật
+                start = new Date(currentDate.setDate(weekStart));
+                start.setHours(0, 0, 0, 0);
+                end = new Date(start);
+                end.setDate(start.getDate() + 6); // Thứ 7
+                end.setHours(23, 59, 59, 999);
+                break;
+            case 'month':
+                start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // Ngày đầu tháng
+                end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // Ngày cuối tháng
+                end.setHours(23, 59, 59, 999);
+                break;
+            default:
+                if (startDate && endDate) {
+                    start = new Date(startDate);
+                    end = new Date(endDate);
+                } else {
+                    return {
+                        statusCode: 400,
+                        message: "Invalid 'timeRange'. Valid values are 'day', 'week', 'month'."
+                    };
+                }
+        }
+
+        // Lấy thống kê đơn hàng
+        const orders = await db.Order.findAll({
+            attributes: ['status', [db.Sequelize.fn('COUNT', db.Sequelize.col('id')), 'count']],
+            where: {
+                orderDate: {
+                    [Op.between]: [start, end]
+                }
+            },
+            group: ['status']
+        });
+
+        // Định dạng kết quả
+        const result = {
+            processing: 0,
+            shipping: 0,
+            completed: 0,
+            returned: 0,
+        };
+
+        orders.forEach(order => {
+            const status = order.dataValues.status;
+            const count = order.dataValues.count;
+            if (result[status] !== undefined) {
+                result[status] = count;
+            }
+        });
+
+        return {
+            statusCode: 200,
+            timeRange: timeRange || `${startDate} to ${endDate}`,
+            data: result
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while getting order statistics' + error.message
+        }
+    }
+}
+
+let getRevenueStatistics = async (query) => {
+    try {
+        const { startDate, endDate, timeRange } = query;
+        if (!timeRange) {
+            return { statusCode: 400, message: 'timeRange is required. Use "day" or "month".' };
+        }
+
+        let results = [];
+        const today = new Date();
+
+        if (timeRange === 'month') {
+            // Trả về doanh thu của từng tháng từ tháng 1 đến tháng 12
+            const yearStart = new Date(today.getFullYear(), 0, 1); // 1/1 của năm hiện tại
+            const yearEnd = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999); // 31/12 của năm hiện tại
+
+            results = await db.Order.findAll({
+                attributes: [
+                    [db.Sequelize.fn('MONTH', db.Sequelize.col('createdAt')), 'month'],
+                    [db.Sequelize.fn('SUM', db.Sequelize.col('totalAmount')), 'totalRevenue']
+                ],
+                where: {
+                    createdAt: { [Op.between]: [yearStart, yearEnd] },
+                    status: { [Op.in]: ['processing', 'shipping', 'completed'] }
+                },
+                group: [db.Sequelize.fn('MONTH', db.Sequelize.col('createdAt'))],
+                order: [[db.Sequelize.fn('MONTH', db.Sequelize.col('createdAt')), 'ASC']]
+            });
+
+            // Định dạng kết quả trả về
+            const formattedResults = Array.from({ length: 12 }, (_, i) => {
+                const month = i + 1;
+                const matchingResult = results.find(r => r.dataValues.month == month);
+                return {
+                    month,
+                    totalRevenue: matchingResult ? parseFloat(matchingResult.dataValues.totalRevenue) : 0
+                };
+            });
+
+            return { statusCode: 200, timeRange, data: formattedResults };
+        } else if (timeRange === 'day') {
+            let start, end;
+
+            if (startDate && endDate) {
+                start = new Date(startDate);
+                end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+            } else {
+                // Thống kê doanh thu từng ngày trong tháng hiện tại
+                start = new Date(today.getFullYear(), today.getMonth(), 1); // Ngày 1 của tháng hiện tại
+                end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999); // Ngày cuối tháng
+            }
+
+            // Kiểm tra khoảng thời gian hợp lệ
+            if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+                return { statusCode: 400, message: 'Invalid date range.' };
+            }
+
+            // Truy vấn doanh thu
+            results = await db.Order.findAll({
+                attributes: [
+                    [db.Sequelize.fn('DATE', db.Sequelize.col('createdAt')), 'date'],
+                    [db.Sequelize.fn('SUM', db.Sequelize.col('totalAmount')), 'totalRevenue']
+                ],
+                where: {
+                    createdAt: { [Op.between]: [start, end] },
+                    status: { [Op.in]: ['processing', 'shipping', 'completed'] }
+                },
+                group: [db.Sequelize.fn('DATE', db.Sequelize.col('createdAt'))],
+                order: [[db.Sequelize.fn('DATE', db.Sequelize.col('createdAt')), 'ASC']]
+            });
+
+            // Định dạng kết quả trả về
+            const formattedResults = [];
+            const currentDate = new Date(start);
+
+            // Tạo mảng với các ngày từ startDate -> endDate
+            while (currentDate <= end) {
+                const dateString = currentDate.toISOString().split('T')[0];
+                const matchingResult = results.find(r => r.dataValues.date === dateString);
+                formattedResults.push({
+                    date: dateString,
+                    totalRevenue: matchingResult ? parseFloat(matchingResult.dataValues.totalRevenue) : 0
+                });
+                currentDate.setDate(currentDate.getDate() + 1); // Tăng ngày
+            }
+
+            return { statusCode: 200, timeRange, startDate, endDate, data: formattedResults };
+        } else {
+            return { statusCode: 400, message: 'Invalid timeRange. Use "day" or "month".' };
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while getting order statistics' + error.message
+        }
+    }
+}
 module.exports = {
     checkOrder,
     createOrder,
     getMyOrders,
+    getOrderStatistics,
+    getRevenueStatistics,
 }

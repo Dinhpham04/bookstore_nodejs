@@ -59,6 +59,11 @@ let initWebRoutes = (app) => {
     router.post('/api/add-banner', bannerController.handleAddBanner);
     router.get('/api/get-banner-by-id', bannerController.handleGetBannerById);
     router.get('/api/get-banners', bannerController.handleGetBanners)
+
+    // thông kê báo cáo 
+    router.get('/api/get-order-statistics', orderController.handleOrderStatistics);
+    router.get('/api/get-revenue-statistics', orderController.handleGetRevenueStatistics);
+
     return app.use("/", router);
 }
 
