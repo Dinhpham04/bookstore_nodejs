@@ -71,10 +71,28 @@ let handleDeleteCartItem = async (req, res) => {
     }
 }
 
+let handleGetCheckedAllCartItem = async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        let respon = await cartService.getCheckedAllCartItem(userId);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        })
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Internal Server Error',
+            error: error.message,
+        }
+    }
+}
+
 module.exports = {
     handleAddToCart,
     handleGetCart,
     handleUpdateCartItem,
     handleDeleteCartItem,
-    handleCheckAllCartItem
+    handleCheckAllCartItem,
+    handleGetCheckedAllCartItem,
 }

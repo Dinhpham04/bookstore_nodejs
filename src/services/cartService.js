@@ -157,7 +157,7 @@ let getCart = async (userId) => {
 
 let updateCartItem = async (cartItemId, quantity, isChecked) => {
     try {
-        if (!cartItemId || (!quantity && !isChecked)) {
+        if (!cartItemId || (!quantity && typeof isChecked === 'undefined')) {
             return {
                 statusCode: 400,
                 message: 'missing parameter',
@@ -169,6 +169,10 @@ let updateCartItem = async (cartItemId, quantity, isChecked) => {
                 {
                     model: db.Product,
                     as: 'product'
+                },
+                {
+                    model: db.Cart,
+                    as: 'cart'
                 }
             ]
         })
@@ -195,7 +199,27 @@ let updateCartItem = async (cartItemId, quantity, isChecked) => {
             cartItem.isChecked = isChecked;
         }
         await cartItem.save();
-
+        const cartItemNotChecked = await db.CartItem.findOne({
+            where: { isChecked: false },
+            include: [
+                {
+                    model: db.Cart,
+                    as: 'cart',
+                    where: { userId: cartItem.cart.userId }
+                }
+            ]
+        })
+        if (!!cartItemNotChecked) {
+            await db.Cart.update(
+                { isCheckedAll: false },
+                { where: { userId: cartItem.cart.userId } }
+            )
+        } else {
+            await db.Cart.update(
+                { isCheckedAll: true },
+                { where: { userId: cartItem.cart.userId } }
+            )
+        }
         return {
             statusCode: 200,
             statusMes: 'CART_ITEM_UPDATED',
@@ -212,7 +236,7 @@ let updateCartItem = async (cartItemId, quantity, isChecked) => {
 
 let checkAllCartItem = async (userId, isChecked) => {
     try {
-        if (!userId || !isChecked) {
+        if (!userId || typeof isChecked === 'undefined') {
             return {
                 statusCode: 400,
                 message: 'Missing parameter',
@@ -232,10 +256,41 @@ let checkAllCartItem = async (userId, isChecked) => {
         await db.CartItem.update({
             isChecked: isChecked
         }, { where: {} })
+        await db.Cart.update({
+            isCheckedAll: isChecked,
+        }, { where: { userId: userId } });
         return {
             statusCode: 200,
-            statusMes: 'ALL_CART_ITEMS_UPDATED',
             message: 'All cart items updated successfully',
+            isCheckedAll: isChecked
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
+
+let getCheckedAllCartItem = async (userId) => {
+    try {
+        if (!userId) {
+            return {
+                statusCode: 400,
+                message: 'missing user id',
+            }
+        }
+        const cart = await db.Cart.findOne({ where: { userId } });
+        if (!cart) {
+            return {
+                statusCode: 404,
+                message: 'Cart not found',
+            }
+        }
+        return {
+            statusCode: 200,
+            message: 'Get checked all cart successfully',
+            isCheckedAll: cart.isCheckedAll
         }
     } catch (error) {
         return {
@@ -282,5 +337,6 @@ module.exports = {
     getCart,
     updateCartItem,
     checkAllCartItem,
-    deleteCartItem
+    deleteCartItem,
+    getCheckedAllCartItem
 }

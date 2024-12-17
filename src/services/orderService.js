@@ -323,14 +323,18 @@ const processPayment = async ({ orderCode, amount, description, returnUrl, cance
 
 let getMyOrders = async (userId, status) => {
     try {
-        if (!userId) {
+        if (!userId, !status) {
             return {
                 statusCode: 400,
                 message: 'Missing parameter',
             }
         }
+        let whereCondition = { userId };
+        if (status !== 'all') {
+            whereCondition.status = status; // thêm điều kiện status nếu status khác all 
+        }
         let orders = await db.Order.findAll({
-            where: { userId, status },
+            where: whereCondition,
             include: [
                 { model: db.Address, as: 'address' },
                 {
