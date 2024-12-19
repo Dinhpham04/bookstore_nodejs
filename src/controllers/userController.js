@@ -103,6 +103,22 @@ let handleGetUserInfo = async (req, res) => {
     }
 }
 
+let handleGetUserById = async (req, res) => {
+    try {
+        const userId = req.query.userId;
+        const respon = await userService.getUserById(userId);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            message: respon.message,
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
 
 module.exports = {
     handleLogin,
@@ -111,4 +127,5 @@ module.exports = {
     handleEditUser,
     handleDeleteUser,
     handleGetUserInfo,
+    handleGetUserById
 }

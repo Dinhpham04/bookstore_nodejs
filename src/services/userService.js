@@ -250,6 +250,39 @@ let getUserInfo = async (userId) => {
     }
 }
 
+let getUserById = async (userId) => {
+    try {
+        if (!userId) {
+            return {
+                statusCode: 400,
+                message: 'User ID is missing'
+            }
+        }
+        const user = await db.User.findOne({
+            where: { id: userId },
+            attributes: ['id', 'firstName', 'lastName', 'phoneNumber', 'profileImage', 'gender', 'userType']
+        })
+        if (!user) {
+            return {
+                statusCode: 404,
+                message: 'User not found'
+            }
+        }
+        return {
+            statusCode: 200,
+            message: 'User retrieved successfully',
+            user: user
+        }
+
+    } catch (error) {
+        return {
+            statusCode: 500,
+            messsage: "error while get user by id",
+            error: error.message
+        }
+    }
+}
+
 module.exports = {
     handleUserLogin,
     checkUserEmail,
@@ -258,4 +291,5 @@ module.exports = {
     deleteUser,
     updateUserData,
     getUserInfo,
+    getUserById,
 }
