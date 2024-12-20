@@ -79,10 +79,27 @@ let handleDeleteAddress = async (req, res) => {
     }
 }
 
+let handleGetAddressById = async (req, res) => {
+    try {
+        const addressId = req.query.addressId;
+        const respon = await addressService.getAddressById(addressId);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
 module.exports = {
     handleGetAddress,
     handleAddAddress,
     handleEditAddress,
     handleSetAddressDefault,
     handleDeleteAddress,
+    handleGetAddressById
 }

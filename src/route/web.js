@@ -6,6 +6,7 @@ import addressController from "../controllers/addressController";
 import orderController from "../controllers/orderController";
 import authenticateToken from "../utils/authenticateToken";
 import bannerController from "../controllers/bannerController";
+import importController from "../controllers/importController";
 let router = express.Router();
 
 let initWebRoutes = (app) => {
@@ -35,6 +36,7 @@ let initWebRoutes = (app) => {
     router.get('/api/get-checked-all-cartItems', cartController.handleGetCheckedAllCartItem);
     // API address
     router.get('/api/get-address', addressController.handleGetAddress);
+    router.get('/api/get-address-by-id', addressController.handleGetAddressById);
     router.post('/api/add-address', addressController.handleAddAddress);
     router.patch('/api/edit-address', addressController.handleEditAddress);
     router.patch('/api/set-address-default', addressController.handleSetAddressDefault);
@@ -65,6 +67,17 @@ let initWebRoutes = (app) => {
     router.get('/api/get-order-statistics', orderController.handleOrderStatistics);
     router.get('/api/get-revenue-statistics', orderController.handleGetRevenueStatistics);
 
+    // quản lý đơn hàng 
+    router.get('/api/get-all-orders', orderController.handelGetAllOrders);
+    router.get('/api/get-order-by-id', orderController.handleGetOrderById);
+    router.patch('/api/update-order', orderController.handleUpdateOrder);
+
+    // quản lý nhập hàng 
+    router.get('/api/get-all-imports', importController.handleGetAllImports);
+    router.get('/api/get-import-by-id', importController.handleGetImportById);
+    router.post('/api/create-import', importController.handleCreateImport);
+    router.patch('/api/update-import', importController.handleUpdateImport);
+    // router.delete('/api/delete-import', importController.handleDeleteImport);
     return app.use("/", router);
 }
 

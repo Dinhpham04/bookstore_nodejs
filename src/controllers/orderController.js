@@ -164,6 +164,51 @@ let handleGetRevenueStatistics = async (req, res) => {
     }
 }
 
+let handelGetAllOrders = async (req, res) => {
+    try {
+        const respon = await orderService.getAllOrders(req.query);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            message: respon.message,
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
+let handleGetOrderById = async (req, res) => {
+    try {
+        const orderId = req.query.orderId;
+        const respon = await orderService.getOrderById(orderId);
+        const { statusCode, ...data } = respon;
+        res.status(statusCode).json({
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
+
+let handleUpdateOrder = async (req, res) => {
+    try {
+        const respon = await orderService.updateOrder(req.body);
+        res.status(respon.statusCode).json({
+            message: respon.message,
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
 module.exports = {
     handleCheckout,
     handleCreateOrder,
@@ -171,5 +216,8 @@ module.exports = {
     handleCancelOrder,
     handleGetMyOrders,
     handleOrderStatistics,
-    handleGetRevenueStatistics
+    handleGetRevenueStatistics,
+    handelGetAllOrders,
+    handleGetOrderById,
+    handleUpdateOrder,
 }

@@ -203,7 +203,8 @@ let updateUserData = async (data) => {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,
-                    phoneNumber: data.phoneNumber
+                    phoneNumber: data.phoneNumber,
+                    userType: data.userType
                 },
                 { where: { id: data.id } }
             )

@@ -46,22 +46,13 @@ let addAddress = async (data) => {
             }
         }
 
-        // // sử dụng transaction để toàn vẹn dữ liệu 
-        // if (isDefault) {
-        //     await db.Address.update(
-        //         { isDefault: false },
-        //         { where: { userId } }
-        //     );
-        // }
-
         const newAddress = await db.Address.create(
-            { recipientName, phoneNumber, city, district, ward, addressDetail, isDefault },
+            { userId, recipientName, phoneNumber, city, district, ward, addressDetail, isDefault },
         )
 
         return {
             statusCode: 201,
             message: 'Add address successfully',
-            address: newAddress
         }
     } catch (error) {
         return {
@@ -197,10 +188,43 @@ let deleteAddress = async (addressId) => {
         }
     }
 }
+
+let getAddressById = async (addressId) => {
+    try {
+        if (!addressId) {
+            return {
+                statusCode: 400,
+                message: 'Missing address ID'
+            }
+        }
+        const address = await db.Address.findOne({
+            where: { id: addressId },
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
+        })
+        if (!address) {
+            return {
+                statusCode: 404,
+                message: 'Address not found'
+            }
+        }
+        return {
+            statusCode: 200,
+            message: 'Get address by ID successfully',
+            address: address,
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error:' + error.message,
+        }
+    }
+}
+
 module.exports = {
     getAddress,
     editAddress,
     addAddress,
     setAddressDefault,
     deleteAddress,
+    getAddressById,
 }

@@ -579,10 +579,100 @@ let getRevenueStatistics = async (query) => {
         }
     }
 }
+
+let getAllOrders = async (query) => {
+    try {
+        let { status, limit = 10, page = 1 } = query;
+        const currentPage = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+        if (currentPage < 1 || pageSize < 1) {
+            return { statusCode: 400, message: 'Invalid page or limit.' };
+        }
+
+        const offset = (currentPage - 1) * pageSize;
+        // filtering conditions
+        const whereCondition = status ? { status: status } : {};
+        const { rows: orders, count: totalOrders } = await db.Order.findAndCountAll({
+            where: whereCondition,
+            litmit: pageSize,
+            offset: offset,
+            order: [['createdAt', 'DESC']],
+        })
+
+        // tính tổng số trang 
+        const totalPages = Math.ceil(totalOrders / pageSize);
+        return {
+            statusCode: 200,
+            message: "get all orders successfully)",
+            orders: orders,
+            pagination: {
+                currentPage,
+                totalPages,
+                pageSize,
+                totalOrders,
+            }
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while getting all orders' + error.message
+        }
+    }
+}
+
+let getOrderById = async (orderId) => {
+    try {
+        if (!orderId) {
+            return { statusCode: 400, message: 'Order ID is required.' };
+        }
+        const order = await db.Order.findByPk(orderId);
+        if (!order) {
+            return { statusCode: 404, message: 'Order not found.' };
+        }
+        return {
+            statusCode: 200,
+            message: 'Get order by ID successfully.',
+            order
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while getting order by ID' + error.message
+        }
+    }
+}
+
+let updateOrder = async (body) => {
+    try {
+        const orderId = body.orderId;
+        if (!orderId) {
+            return { statusCode: 400, message: 'Order ID is required.' };
+        }
+        const order = await db.Order.findByPk(orderId);
+        if (!order) {
+            return { statusCode: 404, message: 'Order not found.' };
+        }
+        await order.update({
+            status: body.status,
+            paymentStatus: body.paymentStatus,
+            note: body.note,
+        })
+        return { statusCode: 200, message: 'Order updated successfully' }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            message: 'Error while updating order' + error.message
+        }
+    }
+}
+
 module.exports = {
     checkOrder,
     createOrder,
     getMyOrders,
     getOrderStatistics,
     getRevenueStatistics,
+    getAllOrders,
+    getOrderById,
+    updateOrder,
 }
