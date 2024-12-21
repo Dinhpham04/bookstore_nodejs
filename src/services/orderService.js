@@ -370,7 +370,7 @@ let getMyOrders = async (userId, status) => {
                     name: orderItem.product.name,
                     price: orderItem.product.price,
                     originalPrice: orderItem.product.originalPrice,
-                    image: orderItem.product.image,
+                    image: orderItem.product.dataValues.image,
                     quantity: orderItem.quantity,
                     totalPrice: orderItem.quantity * orderItem.product.price,
                 }
@@ -421,7 +421,7 @@ let getMyOrdersById = async (orderId) => {
                         {
                             model: db.Product,
                             as: 'product',
-                            attributes: ['id', 'name', 'price', 'originalPrice', 'weight',
+                            attributes: ['id', 'name', 'price', 'originalPrice', 'weight', 'productCode',
                                 [
                                     db.sequelize.literal(
                                         `(SELECT url FROM Images WHERE Images.productId = orderItems.productId AND Images.isPrimary = true )`
@@ -447,7 +447,7 @@ let getMyOrdersById = async (orderId) => {
                 name: orderItem.product.name,
                 price: orderItem.product.price,
                 originalPrice: orderItem.product.originalPrice,
-                image: orderItem.product.image,
+                image: orderItem.product.dataValues.image,
                 quantity: orderItem.quantity,
                 totalPrice: orderItem.quantity * orderItem.product.price,
             }
@@ -467,10 +467,13 @@ let getMyOrdersById = async (orderId) => {
                 note: order.note,
                 address: order.address,
                 products
-            }
+            },
         }
     } catch (error) {
-
+        return {
+            statusCode: 500,
+            message: 'Error while getting order detail' + error.message
+        }
     }
 }
 let getOrderStatistics = async (query) => {
