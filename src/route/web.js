@@ -48,6 +48,7 @@ let initWebRoutes = (app) => {
     router.get('/api/return-order', orderController.handleReturnOrder);
     router.get('/api/cancel-order', orderController.handleCancelOrder);
     router.get('/api/get-my-orders', orderController.handleGetMyOrders);
+    router.get('/api/get-my-order-by-id', orderController.handleGetMyOrderById);
     // rest api 
 
     // admin 

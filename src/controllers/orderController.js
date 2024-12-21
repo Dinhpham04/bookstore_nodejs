@@ -50,15 +50,15 @@ let handleReturnOrder = async (req, res) => {
                 status: 'error',
                 message: 'Order not found',
             })
+        } else {
+            order.status = 'processing';
+            order.paymentStatus = 'paid';
+            await order.save();
+            return res.status(200).json({
+                status: 'success',
+                message: 'Order returned successfully',
+            })
         }
-
-        order.status = 'processing';
-        order.paymentStatus = 'paid';
-        await order.save();
-        return res.status(200).json({
-            status: 'success',
-            message: 'Order returned successfully',
-        })
     } catch (error) {
         return res.status(500).json({
             message: 'Internal Server Error',
@@ -86,30 +86,35 @@ let handleCancelOrder = async (req, res) => {
                 status: 'error',
                 message: 'Order not found',
             })
+        } else if (order.status != 'processing' && order.status != 'pending_payment') {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Only processing or pending payment orders can be canceled',
+            })
+        } else {
+            // 1. Lấy thông tin các mục hàng trong đơn hàng
+            const orderItems = await db.OrderItem.findAll({
+                where: { orderId },
+                include: [{ model: db.Product, as: 'product' }],
+            });
+
+            // 2. Cộng lại số lượng sản phẩm khả dụng
+            for (const item of orderItems) {
+                await db.Product.update(
+                    { quantityAvailable: db.sequelize.literal(`quantityAvailable + ${item.quantity}`) },
+                    { where: { id: item.productId } }
+                );
+            }
+
+
+            order.status = 'returned';
+            order.paymentStatus = 'unpaid';
+            await order.save();
+            return res.status(200).json({
+                status: 'success',
+                message: 'Order is canceled',
+            })
         }
-
-        // 1. Lấy thông tin các mục hàng trong đơn hàng
-        const orderItems = await db.OrderItem.findAll({
-            where: { orderId },
-            include: [{ model: db.Product, as: 'product' }],
-        });
-
-        // 2. Cộng lại số lượng sản phẩm khả dụng
-        for (const item of orderItems) {
-            await db.Product.update(
-                { quantityAvailable: db.sequelize.literal(`quantityAvailable + ${item.quantity}`) },
-                { where: { id: item.productId } }
-            );
-        }
-
-
-        order.status = 'returned';
-        order.paymentStatus = 'unpaid';
-        await order.save();
-        return res.status(200).json({
-            status: 'success',
-            message: 'Order is canceled',
-        })
     } catch (error) {
         return res.status(500).json({
             message: 'Internal Server Error',
@@ -209,6 +214,22 @@ let handleUpdateOrder = async (req, res) => {
         })
     }
 }
+
+let handleGetMyOrderById = async (req, res) => {
+    try {
+        const orderId = req.query.orderId;
+        const respon = await orderService.getMyOrdersById(orderId);
+        const { statusCode, ...data } = respon;
+        res.status(200).json({
+            ...data
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message,
+        })
+    }
+}
 module.exports = {
     handleCheckout,
     handleCreateOrder,
@@ -220,4 +241,5 @@ module.exports = {
     handelGetAllOrders,
     handleGetOrderById,
     handleUpdateOrder,
+    handleGetMyOrderById,
 }

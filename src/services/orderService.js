@@ -323,27 +323,26 @@ const processPayment = async ({ orderCode, amount, description, returnUrl, cance
 
 let getMyOrders = async (userId, status) => {
     try {
-        if (!userId, !status) {
+        if (!userId) {
             return {
                 statusCode: 400,
                 message: 'Missing parameter',
             }
         }
         let whereCondition = { userId };
-        if (status !== 'all') {
+        if (status) {
             whereCondition.status = status; // thêm điều kiện status nếu status khác all 
         }
         let orders = await db.Order.findAll({
             where: whereCondition,
             include: [
-                { model: db.Address, as: 'address' },
                 {
                     model: db.OrderItem, as: 'orderItems',
                     include: [
                         {
                             model: db.Product,
                             as: 'product',
-                            attributes: ['id', 'name', 'price', 'originalPrice', 'weight',
+                            attributes: ['id', 'name', 'price', 'originalPrice',
                                 [
                                     db.sequelize.literal(
                                         `(SELECT url FROM Images WHERE Images.productId = orderItems.productId AND Images.isPrimary = true )`
@@ -363,7 +362,9 @@ let getMyOrders = async (userId, status) => {
             }
         }
         orders = orders.map(order => {
+            let totalProducts = 0;
             let products = order.orderItems.map(orderItem => {
+                totalProducts += orderItem.quantity;
                 return {
                     id: orderItem.product.id,
                     name: orderItem.product.name,
@@ -385,11 +386,13 @@ let getMyOrders = async (userId, status) => {
                 total: order.totalAmount + parseInt(order.shippingFee),
                 note: order.note,
                 address: order.address,
-                products
+                product: products[0],
+                totalProducts
             }
         })
         return {
             statusCode: 200,
+            message: 'Get orders success',
             orders
         }
     } catch (error) {
@@ -400,6 +403,76 @@ let getMyOrders = async (userId, status) => {
     }
 }
 
+let getMyOrdersById = async (orderId) => {
+    try {
+        if (!orderId) {
+            return {
+                statusCode: 400,
+                message: 'Missing parameter',
+            }
+        }
+        let order = await db.Order.findOne({
+            where: { id: orderId },
+            include: [
+                { model: db.Address, as: 'address' },
+                {
+                    model: db.OrderItem, as: 'orderItems',
+                    include: [
+                        {
+                            model: db.Product,
+                            as: 'product',
+                            attributes: ['id', 'name', 'price', 'originalPrice', 'weight',
+                                [
+                                    db.sequelize.literal(
+                                        `(SELECT url FROM Images WHERE Images.productId = orderItems.productId AND Images.isPrimary = true )`
+                                    ),
+                                    'image'
+                                ]
+                            ]
+                        }
+                    ]
+                }
+            ]
+        })
+        if (!order) {
+            return {
+                statusCode: 404,
+                message: 'No order found',
+            }
+        }
+        let products = order.orderItems.map(orderItem => {
+            return {
+                id: orderItem.product.id,
+                productCode: orderItem.product.productCode,
+                name: orderItem.product.name,
+                price: orderItem.product.price,
+                originalPrice: orderItem.product.originalPrice,
+                image: orderItem.product.image,
+                quantity: orderItem.quantity,
+                totalPrice: orderItem.quantity * orderItem.product.price,
+            }
+        })
+        return {
+            statusCode: 200,
+            message: 'get my order detail successfully',
+            order: {
+                orderCode: order.id,
+                status: order.status,
+                orderDate: order.orderDate,
+                paymentMethod: order.paymentMethod,
+                paymentStatus: order.paymentStatus,
+                totalAmount: order.totalAmount,
+                shippingFee: parseInt(order.shippingFee),
+                total: order.totalAmount + parseInt(order.shippingFee),
+                note: order.note,
+                address: order.address,
+                products
+            }
+        }
+    } catch (error) {
+
+    }
+}
 let getOrderStatistics = async (query) => {
     try {
         const { timeRange, startDate, endDate } = query;
@@ -675,4 +748,5 @@ module.exports = {
     getAllOrders,
     getOrderById,
     updateOrder,
+    getMyOrdersById
 }
